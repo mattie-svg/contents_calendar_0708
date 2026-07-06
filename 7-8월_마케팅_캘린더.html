@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>2026년 7-8월 콘텐츠 · 페이드마케팅 캘린더</title>
+<style>
+  :root{
+    --ink:#1f2430; --sub:#6b7280; --line:#e5e7eb; --bg:#f7f7f5;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:32px 24px 64px; background:var(--bg);
+    font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    color:var(--ink);
+  }
+  .wrap{max-width:1080px; margin:0 auto;}
+  h1{font-size:22px; font-weight:800; margin:0 0 4px;}
+  .sub{color:var(--sub); font-size:13px; margin-bottom:24px;}
+
+  /* legend */
+  .legend{
+    display:flex; flex-wrap:wrap; gap:10px 18px;
+    background:#fff; border:1px solid var(--line); border-radius:12px;
+    padding:14px 18px; margin-bottom:28px; font-size:12.5px;
+  }
+  .legend-item{display:flex; align-items:center; gap:6px;}
+  .swatch{width:12px; height:12px; border-radius:3px; flex-shrink:0;}
+  .swatch.dashed{background-image:repeating-linear-gradient(45deg, currentColor 0 2px, transparent 2px 4px); background-color:transparent;}
+
+  /* tabs */
+  .tabs{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
+  .tab{
+    font-family:inherit; font-size:13px; font-weight:700; cursor:pointer;
+    padding:8px 16px; border-radius:999px; border:1px solid var(--line);
+    background:#fff; color:var(--sub); transition:all .15s ease;
+  }
+  .tab:hover{border-color:#c7c5bd;}
+  .tab.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+
+  .toolbar{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;}
+  .sync-status{font-size:12px; color:var(--sub); display:flex; align-items:center; gap:6px;}
+  .dot{width:7px; height:7px; border-radius:50%; background:#22c55e; flex-shrink:0;}
+  .add-btn{
+    font-family:inherit; font-size:13px; font-weight:700; cursor:pointer;
+    padding:8px 16px; border-radius:8px; border:none; background:var(--ink); color:#fff;
+  }
+  .add-btn:hover{opacity:.9;}
+
+  .overlay{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,.4);
+    align-items:center; justify-content:center; z-index:50;
+  }
+  .overlay.open{display:flex;}
+  .modal{background:#fff; border-radius:14px; padding:22px; width:340px; max-width:90vw;}
+  .modal h3{margin:0 0 14px; font-size:15px;}
+  .modal label{display:block; font-size:12px; font-weight:700; color:var(--sub); margin:12px 0 4px;}
+  .modal input, .modal select{
+    width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px;
+    font-family:inherit; font-size:13px; box-sizing:border-box;
+  }
+  .modal-actions{display:flex; gap:8px; margin-top:18px;}
+  .modal-actions button{
+    flex:1; padding:9px 0; border-radius:8px; border:none; font-family:inherit;
+    font-size:13px; font-weight:700; cursor:pointer;
+  }
+  .btn-cancel{background:#f1f1ef; color:var(--ink);}
+  .btn-save{background:var(--ink); color:#fff;}
+  .chip[data-pid]{cursor:pointer;}
+  .chip[data-pid]:hover{outline:1.5px solid rgba(0,0,0,.25);}
+
+  /* month block */
+  .month{background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:28px;}
+  .month-title{font-size:17px; font-weight:800; margin:0 0 14px;}
+  .grid{display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .dow{background:#fafafa; text-align:center; font-size:12px; font-weight:700; padding:8px 0; color:var(--sub);}
+  .dow.sun{color:#dc2626;} .dow.sat{color:#2563eb;}
+  .cell{background:#fff; min-height:108px; padding:6px 6px 5px; display:flex; flex-direction:column;}
+  .cell.blank{background:#fbfbfa;}
+  .cell.highlight{
+    background:linear-gradient(180deg,#fff7ea,#fffaf0);
+    outline:2.5px solid #d97706; outline-offset:-2.5px;
+    box-shadow:0 0 0 4px rgba(217,119,6,.12) inset;
+    position:relative;
+  }
+  .cell.highlight::before{
+    content:'⭐ D-DAY';
+    position:absolute; top:4px; right:6px;
+    font-size:9px; font-weight:800; color:#d97706;
+  }
+  .cell.highlight .daynum{color:#b45309; font-size:15px;}
+  .daynum{font-size:12.5px; font-weight:700; margin-bottom:3px;}
+  .daynum.sun{color:#dc2626;} .daynum.sat{color:#2563eb;}
+  .chips{display:flex; flex-direction:column; gap:2px; margin-bottom:auto;}
+  .chip{font-size:9.5px; font-weight:700; line-height:1.3; padding:1.5px 4px; border-radius:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .bars{display:flex; flex-direction:column; gap:2px; margin-top:4px;}
+  .bar{height:4px; border-radius:2px;}
+  .bar.dashed{background-image:repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px); background-color:transparent; height:3px;}
+  .arrow{font-size:9px; margin-left:2px;}
+
+  /* notes */
+  .note-box{margin-top:14px; background:#fafaf8; border:1px dashed #d6d3cd; border-radius:10px; padding:12px 14px; font-size:12.5px; color:#4b4b46; line-height:1.7;}
+  .note-box b{color:var(--ink);}
+  .forward{background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px 20px; font-size:13px; line-height:1.8;}
+  .forward h2{font-size:14px; margin:0 0 8px;}
+  .forward ul{margin:0; padding-left:18px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>2026년 7–8월 콘텐츠 &amp; 페이드마케팅 캘린더</h1>
+
+  <div class="tabs">
+    <button class="tab active" data-filter="all">전체</button>
+    <button class="tab" data-filter="webinar">웨비나</button>
+    <button class="tab" data-filter="contest">공모전</button>
+    <button class="tab" data-filter="paid">페이드마케팅</button>
+    <button class="tab" data-filter="crm">CRM</button>
+  </div>
+
+  <div class="toolbar">
+    <div class="sync-status" id="syncStatus"><span class="dot"></span>불러오는 중...</div>
+    <button class="add-btn" id="openAddBtn">+ 일정 추가</button>
+  </div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="month" id="month-2026-07">
+    <div class="month-title">2026년 7월</div>
+    <div class="grid" id="grid-2026-07"></div>
+    <div class="note-box">
+      📌 <b>확정된 세부 일정</b><br>
+      · 7/6~7/10: CRM 포맷 구상 · 큐레터 구좌 확인(헤일로) · 페이드마케팅 예산 컨펌(매티)<br>
+      · 7/8: 웨비나 기획 초안 공유(매티) · 브지방 웨비나 킥오프 팀회의<br>
+      · 7/13(월): CRM 세일즈키트 발송<br>
+      · 7/16: 전문가모드 팝업/배너 리제 전달<br>
+      · 7/22(수): 브지방 1차 CRM 발송<br>
+      · 7/28: 공모전 이미지 제작 완료(리지)<br>
+      · 7/31: 웨비나 촬영<br>
+      📌 <b>미확정 항목</b><br>
+      · 공모전 타이틀 · 시상 스킴(상품/무상캐시/굿즈/상패) · 홍보배너 확정
+    </div>
+  </div>
+
+  <div class="month" id="month-2026-08">
+    <div class="month-title">2026년 8월</div>
+    <div class="grid" id="grid-2026-08"></div>
+    <div class="note-box">
+      📌 <b>확정된 세부 일정</b><br>
+      · 8/3(월): 웨비나 홍보 CRM 2차 발송<br>
+      · 8/6(목): 웨비나 편집본 받음<br>
+      · 8/7: 전문가모드 팝업 배너 교체 리제에게 전달 (D-day) · 브지방 웨비나 페이드 종료<br>
+      · 8/10: 브지방 웨비나 진행 · 공모전 페이지 오픈 · 공모전 모집 시작<br>
+      · 8/12: 공모전 홍보 CRM / 에이전시 메일링 진행<br>
+      · 8/17: 브지방 리드마그넷 페이드 시작<br>
+      📌 <b>미확정 항목</b><br>
+      · 리드마그넷 페이드마케팅 믹스
+    </div>
+  </div>
+
+  <div class="forward">
+    <h2>➡️ 9월 이후 예고 (참고)</h2>
+    <ul>
+      <li>공모전 모집 마감 (9월) → 10월 결과 발표 + 차기 주제 안내</li>
+      <li>리드폼 웨비나 페이드마케팅 시작: <b>9월 14일</b> (웨비나 2주 전)</li>
+      <li>리드폼 웨비나 개최: <b>9월 말</b> — CRM 웨비나소개 사전 발송 필요</li>
+    </ul>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3>새 일정 추가</h3>
+    <label>날짜</label>
+    <input type="date" id="fDate" min="2026-07-01" max="2026-08-31">
+    <label>내용</label>
+    <input type="text" id="fLabel" placeholder="예: 브지방 3차 CRM 발송">
+    <label>분류</label>
+    <select id="fTag">
+      <option value="webinar">웨비나</option>
+      <option value="contest">공모전</option>
+      <option value="paid">페이드마케팅</option>
+      <option value="crm">CRM</option>
+      <option value="">기타(전체 탭에만 표시)</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="cancelBtn">취소</button>
+      <button class="btn-save" id="saveBtn">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'calendar-data-v1';
+const DATA_VERSION = 3;
+
+const DEFAULT_CAMPAIGNS = [
+  {id:'crm_prep',   label:'CRM 포맷 구상',shortLabel:'CRM 포맷 구상',    color:'#475569', bg:'#e2e8f0', start:'2026-07-06', end:'2026-07-10', dashed:true, tags:['crm']},
+  {id:'curation_check', label:'큐레터 구좌 확인(헤일로)', shortLabel:'큐레터 확인', color:'#475569', bg:'#e2e8f0', start:'2026-07-06', end:'2026-07-10', dashed:true, tags:['crm']},
+  {id:'budget_confirm', label:'페이드마케팅 예산 컨펌(매티)', shortLabel:'예산 컨펌', color:'#475569', bg:'#e2e8f0', start:'2026-07-06', end:'2026-07-10', dashed:true, tags:['paid']},
+  {id:'paid_bj',    label:'브지방 웨비나 페이드(메타·아이보스)', shortLabel:'브지방 페이드', color:'#2563eb', bg:'#dbeafe', start:'2026-07-20', end:'2026-08-07', tags:['webinar','paid']},
+  {id:'popup',      label:'전문가모드 팝업/가이드북 배너',        shortLabel:'팝업/배너',    color:'#7c3aed', bg:'#ede9fe', start:'2026-07-20', end:'2026-08-10', tags:['webinar']},
+  {id:'lead_magnet',label:'브지방 리드마그넷 페이드(메타·링크드인)',shortLabel:'리드마그넷 페이드', color:'#4f46e5', bg:'#e0e7ff', start:'2026-08-17', end:'2026-08-31', openEnd:true, tags:['paid']},
+  {id:'contest',    label:'공모전 모집기간',                       shortLabel:'공모전 모집',  color:'#d97706', bg:'#fef3c7', start:'2026-08-10', end:'2026-08-31', openEnd:true, tags:['contest']},
+];
+
+const DEFAULT_POINT_EVENTS = [
+  {id:'pe11', date:'2026-07-08', label:'웨비나 기획 초안 공유(매티)', color:'#0891b2', bg:'#cffafe', tags:['webinar']},
+  {id:'pe12', date:'2026-07-08', label:'브지방 웨비나 킥오프 팀회의', color:'#0891b2', bg:'#cffafe', tags:['webinar']},
+  {id:'pe1', date:'2026-07-13', label:'세일즈키트 CRM 발송', color:'#059669', bg:'#d1fae5', tags:['crm']},
+  {id:'pe2', date:'2026-07-16', label:'팝업/배너 리제 전달', color:'#7c3aed', bg:'#ede9fe', tags:['webinar']},
+  {id:'pe3', date:'2026-07-22', label:'브지방 1차 CRM 발송', color:'#059669', bg:'#d1fae5', tags:['webinar','crm']},
+  {id:'pe13', date:'2026-07-28', label:'공모전 이미지 제작 완료(리지)', color:'#d97706', bg:'#fef3c7', tags:['contest']},
+  {id:'pe4', date:'2026-07-31', label:'웨비나 촬영', color:'#0891b2', bg:'#cffafe', tags:['webinar']},
+  {id:'pe5', date:'2026-08-03', label:'웨비나 홍보 CRM 2차 발송', color:'#059669', bg:'#d1fae5', tags:['webinar','crm']},
+  {id:'pe6', date:'2026-08-06', label:'웨비나 편집본 받음', color:'#0891b2', bg:'#cffafe', tags:['webinar']},
+  {id:'pe7', date:'2026-08-07', label:'팝업 배너 교체 리제에게 전달(D-day)', color:'#7c3aed', bg:'#ede9fe', tags:['webinar']},
+  {id:'pe8', date:'2026-08-10', label:'웨비나 진행', color:'#dc2626', bg:'#fee2e2', tags:['webinar']},
+  {id:'pe9', date:'2026-08-10', label:'공모전 페이지 오픈', color:'#d97706', bg:'#fef3c7', tags:['contest']},
+  {id:'pe10', date:'2026-08-12', label:'공모전 홍보 CRM/에이전시 메일링', color:'#d97706', bg:'#fef3c7', tags:['contest','crm']},
+];
+
+const TAG_STYLE = {
+  webinar:{color:'#7c3aed', bg:'#ede9fe'},
+  contest:{color:'#d97706', bg:'#fef3c7'},
+  paid:{color:'#2563eb', bg:'#dbeafe'},
+  crm:{color:'#059669', bg:'#d1fae5'},
+  '':{color:'#475569', bg:'#e2e8f0'},
+};
+
+let campaigns = [];
+let pointEvents = [];
+let activeFilter = 'all';
+function matches(item){ return activeFilter==='all' || item.tags.includes(activeFilter); }
+
+const TODAY = '2026-07-03';
+
+function fmt(y,m,d){ return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+function inRange(date, s, e){ return date >= s && date <= e; }
+function uid(){ return 'e' + Date.now() + Math.floor(Math.random()*1000); }
+
+async function loadData(){
+  const statusEl = document.getElementById('syncStatus');
+  try{
+    const result = await window.storage.get(STORAGE_KEY, true);
+    const parsed = JSON.parse(result.value);
+    if(parsed.version === DATA_VERSION){
+      campaigns = parsed.campaigns;
+      pointEvents = parsed.pointEvents;
+    } else {
+      // 새 버전의 기본값으로 재동기화 (기획 변경사항 반영)
+      campaigns = DEFAULT_CAMPAIGNS;
+      pointEvents = DEFAULT_POINT_EVENTS;
+      await window.storage.set(STORAGE_KEY, JSON.stringify({version:DATA_VERSION, campaigns, pointEvents}), true);
+    }
+    statusEl.innerHTML = '<span class="dot"></span>공유 데이터 · 최신 상태';
+  }catch(e){
+    campaigns = DEFAULT_CAMPAIGNS;
+    pointEvents = DEFAULT_POINT_EVENTS;
+    try{
+      await window.storage.set(STORAGE_KEY, JSON.stringify({version:DATA_VERSION, campaigns, pointEvents}), true);
+      statusEl.innerHTML = '<span class="dot"></span>공유 데이터 · 최신 상태';
+    }catch(e2){
+      statusEl.innerHTML = '<span class="dot" style="background:#dc2626"></span>저장소 연결 실패 (임시 데이터로 표시 중)';
+    }
+  }
+}
+
+async function saveData(){
+  const statusEl = document.getElementById('syncStatus');
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify({version:DATA_VERSION, campaigns, pointEvents}), true);
+    statusEl.innerHTML = '<span class="dot"></span>공유 데이터 · 최신 상태';
+  }catch(e){
+    statusEl.innerHTML = '<span class="dot" style="background:#dc2626"></span>저장 실패 — 새로고침 후 다시 시도해주세요';
+  }
+}
+
+function renderLegend(){
+  const el = document.getElementById('legend');
+  const items = campaigns.filter(matches).map(c => `
+    <div class="legend-item" style="color:${c.color}">
+      <span class="swatch ${c.dashed?'dashed':''}" style="${c.dashed?'':'background:'+c.color}"></span>
+      <span style="color:var(--ink)">${c.label}${c.openEnd?' (진행중 →)':''}</span>
+    </div>`).join('');
+  const hasEventTag = pointEvents.some(p => matches(p) && p.color==='#dc2626');
+  const eventItem = hasEventTag ? `
+    <div class="legend-item">
+      <span class="swatch" style="background:#dc2626"></span>
+      <span style="color:var(--ink)">주요 이벤트 (웨비나 개최 등)</span>
+    </div>` : '';
+  el.innerHTML = items + eventItem || '<span style="color:var(--sub)">해당 유형의 항목이 없습니다</span>';
+}
+
+function renderMonth(year, month, daysInMonth){
+  const gridEl = document.getElementById(`grid-${year}-${String(month).padStart(2,'0')}`);
+  const dowNames = ['일','월','화','수','목','금','토'];
+  let html = dowNames.map((n,i) => `<div class="dow ${i===0?'sun':i===6?'sat':''}">${n}</div>`).join('');
+
+  const firstDow = new Date(year, month-1, 1).getDay();
+  for(let i=0;i<firstDow;i++) html += `<div class="cell blank"></div>`;
+
+  for(let d=1; d<=daysInMonth; d++){
+    const dateStr = fmt(year, month, d);
+    const dow = new Date(year, month-1, d).getDay();
+    const isHighlight = dateStr === '2026-08-10';
+
+    let chips = '';
+    campaigns.filter(matches).forEach(c => {
+      if(dateStr === c.start){
+        chips += `<div class="chip" style="background:${c.bg};color:${c.color}">${c.shortLabel} 시작</div>`;
+      } else if(dateStr === c.end && !c.openEnd){
+        chips += `<div class="chip" style="background:${c.bg};color:${c.color}">${c.shortLabel} 종료</div>`;
+      }
+    });
+    pointEvents.filter(matches).filter(p=>p.date===dateStr).forEach(p=>{
+      chips += `<div class="chip" data-pid="${p.id}" title="클릭하여 삭제" style="background:${p.bg};color:${p.color}">${p.label}</div>`;
+    });
+
+    let bars = '';
+    campaigns.filter(matches).forEach(c => {
+      if(inRange(dateStr, c.start, c.end)){
+        const isLastVisible = dateStr === c.end;
+        bars += `<div class="bar ${c.dashed?'dashed':''}" style="${c.dashed?'color:'+c.color:'background:'+c.color}">${(c.openEnd && isLastVisible)?'<span class="arrow">→</span>':''}</div>`;
+      }
+    });
+
+    html += `<div class="cell ${isHighlight?'highlight':''}">
+        <div class="daynum ${dow===0?'sun':dow===6?'sat':''}">${d}</div>
+        <div class="chips">${chips}</div>
+        <div class="bars">${bars}</div>
+      </div>`;
+  }
+
+  const totalCells = firstDow + daysInMonth;
+  const remain = (7 - (totalCells % 7)) % 7;
+  for(let i=0;i<remain;i++) html += `<div class="cell blank"></div>`;
+
+  gridEl.innerHTML = html;
+}
+
+function renderAll(){
+  renderLegend();
+  renderMonth(2026,7,31);
+  renderMonth(2026,8,31);
+}
+
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeFilter = btn.dataset.filter;
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderAll();
+  });
+});
+
+// 일정 추가 모달
+const overlay = document.getElementById('overlay');
+document.getElementById('openAddBtn').addEventListener('click', () => {
+  document.getElementById('fDate').value = '';
+  document.getElementById('fLabel').value = '';
+  document.getElementById('fTag').value = 'webinar';
+  overlay.classList.add('open');
+});
+document.getElementById('cancelBtn').addEventListener('click', () => overlay.classList.remove('open'));
+overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.classList.remove('open'); });
+
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const date = document.getElementById('fDate').value;
+  const label = document.getElementById('fLabel').value.trim();
+  const tag = document.getElementById('fTag').value;
+  if(!date || !label){ alert('날짜와 내용을 모두 입력해주세요.'); return; }
+  const style = TAG_STYLE[tag];
+  pointEvents.push({ id: uid(), date, label, color: style.color, bg: style.bg, tags: tag ? [tag] : [] });
+  overlay.classList.remove('open');
+  await saveData();
+  renderAll();
+});
+
+// 칩 클릭 → 삭제 (이벤트 위임)
+document.querySelector('.wrap').addEventListener('click', async (e) => {
+  const chip = e.target.closest('.chip[data-pid]');
+  if(!chip) return;
+  const pid = chip.dataset.pid;
+  const target = pointEvents.find(p => p.id === pid);
+  if(!target) return;
+  if(confirm(`"${target.label}" 일정을 삭제할까요?`)){
+    pointEvents = pointEvents.filter(p => p.id !== pid);
+    await saveData();
+    renderAll();
+  }
+});
+
+(async function init(){
+  await loadData();
+  renderAll();
+})();
+</script>
+</body>
+</html>
